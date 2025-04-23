@@ -1,1 +1,3 @@
-git status
+git add legv8_disasm.py app.py requirements.txt
+git commit -m "Add decoder and Streamlit UI"
+git push
