@@ -1,40 +1,58 @@
 import streamlit as st
-from legv8_disasm import decode  # your decoder from before
+from legv8_disasm import decode
 
-# ─── Page & theme setup ───────────────────────────────────────────────────────
+# ─── Page configuration & custom CSS ──────────────────────────────────────────
 st.set_page_config(page_title="LEGv8 Reverse-Assembler", layout="centered")
 st.markdown("""
 <style>
-/* background */
+/* 1) Page background */
 [data-testid="stAppViewContainer"] {
   background-color: #E0F7FA;
 }
-/* headers */
-h1, h2, h3 { color: #1E88E5; }
-/* inputs */
-.stTextInput>div>div>input {
-  border: 2px solid #42A5F5 !important;
-  background-color: #E3F2FD !important;
+
+/* 2) Global text color */
+h1, h2, h3, h4, p, label, .stRadio > div > label {
+  color: #1E3A8A !important;
 }
-/* decode button */
+
+/* 3) OTP-style input boxes */
+.stTextInput>div>div>input {
+  background-color: #BBDEFB !important;
+  border: 2px solid #1E3A8A !important;
+  color: #1E3A8A !important;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* 4) Paste area */
+.stTextArea>div>textarea {
+  background-color: #E3F2FD !important;
+  border: 2px solid #1E3A8A !important;
+  color: #1E3A8A !important;
+  font-family: monospace;
+}
+
+/* 5) Decode button */
 .stButton>button {
-  background-color: #1E88E5 !important;
+  background-color: #1E3A8A !important;
   color: white !important;
   border-radius: 8px;
+  font-weight: bold;
+}
+
+/* 6) Radio labels */
+.stRadio>div>label>div[data-testid="stMarkdownContainer"] {
+  color: #1E3A8A !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
+# ─── Header & description ────────────────────────────────────────────────────
 st.title("LEGv8 Reverse-Assembler")
-st.markdown("A little front-end polish: choose your input format, fill boxes or paste, then Decode.")
+st.markdown("Choose input format, fill the boxes or paste your code, then click **Decode**.")
 
 # ─── Input format selector ─────────────────────────────────────────────────────
-fmt = st.radio(
-    "Input format:",
-    ("Hexadecimal", "Binary"),
-    index=0,
-    horizontal=True
-)
+fmt = st.radio("Input format:", ("Hexadecimal", "Binary"), index=0, horizontal=True)
 
 # ─── OTP-style boxes + paste area ──────────────────────────────────────────────
 st.markdown("#### Enter your code below")
@@ -42,39 +60,34 @@ if fmt == "Hexadecimal":
     cols = st.columns(8)
     hex_digits = []
     for i, col in enumerate(cols):
-        d = col.text_input(f"{i}", max_chars=1, key=f"hex_{i}")
+        d = col.text_input(str(i), max_chars=1, key=f"hex_{i}")
         hex_digits.append(d or "")
     box_val = "".join(hex_digits)
-
     raw = st.text_area("…or paste full hex code here:", box_val)
     code = raw.strip() or box_val
 
-else:  # Binary
+else:
     cols = st.columns(8)
     bit_groups = []
     for i, col in enumerate(cols):
         g = col.text_input(f"{i*4}-{i*4+3}", max_chars=4, key=f"bin_{i}")
         bit_groups.append(g or "")
     box_val = "".join(bit_groups)
-
     raw = st.text_area("…or paste full binary code here:", box_val)
     code = raw.strip() or box_val
 
-# ─── Decode button & logic ─────────────────────────────────────────────────────
+# ─── Decode button & result ───────────────────────────────────────────────────
 if st.button("Decode"):
     if not code:
-        st.warning("Please enter a code in the boxes or paste it above.")
+        st.warning("Please enter or paste a code.")
     else:
-        # If binary, convert to hex first
         if fmt == "Binary":
-            cleaned = code.replace(" ", "")
+            cleaned = code.replace(" ", "").replace("\n", "")
             try:
                 code = format(int(cleaned, 2), "08X")
             except ValueError:
-                st.error("Invalid binary string—must be 32 bits of 0s and 1s.")
+                st.error("Invalid binary string — must be up to 32 bits of 0s and 1s.")
                 st.stop()
-
-        # Now run the decoder
         try:
             result = decode(code)
             st.success(f"**{code.upper()}** → {result}")
