@@ -1,21 +1,14 @@
 import streamlit as st
-from legv8_disasm import decode_inst  # <-- import the new decoder
+from legv8_disasm import decode_inst  # or `decode` if you aliased it
 
 # ─── Page config & CSS ────────────────────────────────────────────────────────
 st.set_page_config(page_title="LEGv8 Reverse-Assembler", layout="centered")
 st.markdown(
     """
     <style>
-    [data-testid="stAppViewContainer"] {
-      background-color: #FFFFFF;
-    }
-    h1 {
-      text-align: center !important;
-      color: #1E3A8A !important;
-    }
-    h2, p, label, .stRadio label {
-      color: #1E3A8A !important;
-    }
+    [data-testid="stAppViewContainer"] { background-color: #FFFFFF; }
+    h1 { text-align: center !important; color: #1E3A8A !important; }
+    h2, p, label, .stRadio label { color: #1E3A8A !important; }
     .stTextArea>div>textarea {
       background-color: #222222 !important;
       color: #FFFFFF !important;
@@ -24,7 +17,7 @@ st.markdown(
       font-family: monospace !important;
     }
     /* Decode button: white background with dark blue text */
-    div.stButton > button:first-child {
+    div.stButton > button {
       background-color: #FFFFFF !important;
       color: #1E3A8A !important;
       font-weight: 600 !important;
@@ -32,12 +25,12 @@ st.markdown(
       border: 2px solid #1E3A8A !important;
       border-radius: 8px !important;
       padding: 10px 24px !important;
-      min-width: 140px;
-      margin-top: 10px;
+      min-width: 140px !important;
+      margin-top: 10px !important;
     }
-    div.stButton > button:first-child:hover {
+    div.stButton > button:hover {
       background-color: #F3F4F6 !important;
-      opacity: 0.95;
+      opacity: 0.95 !important;
     }
     </style>
     """,
@@ -60,33 +53,33 @@ paste_label = (
 )
 codes_input = st.text_area(paste_label, height=180)
 
-# ─── Decode form ───────────────────────────────────────────────────────────────
-with st.form("decode_form"):
-    submit = st.form_submit_button("Decode")
-
-    if submit:
-        if not codes_input.strip():
-            st.warning("Please enter at least one machine code.")
-        else:
-            for token in codes_input.split():
-                tok = token.strip()
-                # Convert binary → hex if needed
-                if fmt == "Binary":
-                    if not all(c in "01" for c in tok):
-                        st.error(f"Invalid binary: {tok}")
-                        continue
-                    tok = format(int(tok, 2), "08X")
-                else:  # Hex mode
-                    tok = tok.removeprefix("0x").upper().zfill(8)
-                    try:
-                        int(tok, 16)
-                    except ValueError:
-                        st.error(f"Invalid hex: {token}")
-                        continue
-
-                # Decode via the new function
+# ─── Decode button & warnings restored ────────────────────────────────────────
+if st.button("Decode"):
+    # 1) Empty‐input warning
+    if not codes_input.strip():
+        st.warning("Please enter at least one machine code.")
+    else:
+        # 2) Tokenize and decode each
+        for token in codes_input.split():
+            tok = token.strip()
+            # a) Binary → hex
+            if fmt == "Binary":
+                if not all(c in "01" for c in tok):
+                    st.warning(f"Invalid binary string: {tok}")
+                    continue
+                tok = format(int(tok, 2), "08X")
+            # b) Normalize hex
+            else:
+                tok = tok.removeprefix("0x").upper().zfill(8)
                 try:
-                    asm = decode_inst(tok)
-                    st.write(f"**{tok}** → {asm}")
-                except Exception as e:
-                    st.error(f"Error decoding {tok}: {e}")
+                    int(tok, 16)
+                except ValueError:
+                    st.warning(f"Invalid hex code: {token}")
+                    continue
+
+            # 3) Decode and catch errors
+            try:
+                asm = decode_inst(tok)
+                st.success(f"**{tok}** → {asm}")
+            except Exception as e:
+                st.error(f"Error decoding {tok}: {e}")
