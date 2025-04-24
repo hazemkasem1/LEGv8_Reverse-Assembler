@@ -27,13 +27,13 @@ st.markdown(
       font-family: monospace !important;
     }
 
-    /* FINAL STYLED functional decode button */
+    /* Decode button: white background with dark blue text */
     div.stButton > button:first-child {
-      background-color: #1E3A8A !important;
-      color: #FFFFFF !important;
+      background-color: #FFFFFF !important;
+      color: #1E3A8A !important;
       font-weight: 600 !important;
       font-size: 16px !important;
-      border: none !important;
+      border: 2px solid #1E3A8A !important;
       border-radius: 8px !important;
       padding: 10px 24px !important;
       min-width: 140px;
@@ -41,7 +41,8 @@ st.markdown(
     }
 
     div.stButton > button:first-child:hover {
-      opacity: 0.9;
+      background-color: #F3F4F6 !important;
+      opacity: 0.95;
     }
     </style>
     """,
@@ -64,7 +65,7 @@ paste_label = (
 )
 codes_input = st.text_area(paste_label, height=180)
 
-# ─── Decode button & output (styled, functional) ──────────────────────────────
+# ─── Decode button & output ───────────────────────────────────────────────────
 with st.form("decode_form"):
     submit = st.form_submit_button("Decode")
 
