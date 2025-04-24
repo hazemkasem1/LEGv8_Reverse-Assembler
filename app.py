@@ -6,11 +6,11 @@ st.set_page_config(page_title="LEGv8 Reverse-Assembler", layout="centered")
 st.markdown(
     """
     <style>
-    /* 1) Page background */
+    /* Page background */
     [data-testid="stAppViewContainer"] { background-color: #E0F7FA; }
-    /* 2) Headings & text in royal-blue */
+    /* Headings & text */
     h1, h2, p, label, .stRadio label { color: #1E3A8A !important; }
-    /* 3) Textarea styling */
+    /* Textarea styling */
     .stTextArea>div>textarea {
       background-color: #222222 !important;
       color: #E0F7FA !important;
@@ -18,7 +18,7 @@ st.markdown(
       border-radius: 4px;
       font-family: monospace;
     }
-    /* 4) Decode button */
+    /* Decode button */
     .stButton>button {
       background-color: #1E3A8A !important;
       color: white !important;
@@ -43,14 +43,16 @@ fmt = st.radio(
     horizontal=True
 )
 
-# ─── Single textarea for codes ────────────────────────────────────────────────
-label = (
-    "…or paste full hex code here (32-bit words, separated by spaces or new lines):"
+# ─── Updated textarea label ──────────────────────────────────────────────────
+paste_label = (
+    "Paste one or more 8-digit HEX machine codes (e.g. D1002C27), separated by spaces or new lines:"
     if fmt == "Hexadecimal"
     else
-    "…or paste full binary code here (32-bit words, separated by spaces or new lines):"
+    "Paste one or more 32-bit BINARY codes (e.g. 000100010000…), separated by spaces or new lines:"
 )
-codes_input = st.text_area(label, height=180)
+
+# ─── Single textarea for codes ────────────────────────────────────────────────
+codes_input = st.text_area(paste_label, height=180)
 
 # ─── Decode button & results ─────────────────────────────────────────────────
 if st.button("Decode"):
@@ -59,7 +61,6 @@ if st.button("Decode"):
     else:
         for token in codes_input.split():
             tok = token.strip()
-            # Auto-detect / convert
             if fmt == "Binary":
                 if not all(c in "01" for c in tok):
                     st.error(f"Invalid binary: {tok}")
@@ -67,14 +68,12 @@ if st.button("Decode"):
                 tok = format(int(tok, 2), "08X")
             else:  # Hex
                 tok = tok.removeprefix("0x").upper().zfill(8)
-                # Validate
                 try:
                     int(tok, 16)
                 except ValueError:
                     st.error(f"Invalid hex: {token}")
                     continue
 
-            # Decode & display
             try:
                 asm = decode(tok)
                 st.write(f"**{tok}** → {asm}")
