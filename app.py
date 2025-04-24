@@ -6,21 +6,20 @@ st.set_page_config(page_title="LEGv8 Reverse-Assembler", layout="centered")
 st.markdown(
     """
     <style>
-    /* 1) White page background */
-    [data-testid="stAppViewContainer"] { background-color: #FFFFFF; }
-
-    /* 2) Center & style the title in royal-blue */
+    /* White page background */
+    [data-testid="stAppViewContainer"] {
+      background-color: #FFFFFF;
+    }
+    /* Center & style the title */
     h1 {
       text-align: center !important;
       color: #1E3A8A !important;
     }
-
-    /* 3) Other text in royal-blue */
+    /* Royal-blue for all other text */
     h2, p, label, .stRadio label {
       color: #1E3A8A !important;
     }
-
-    /* 4) Dark textarea styling */
+    /* Dark textarea */
     .stTextArea>div>textarea {
       background-color: #222222 !important;
       color: #FFFFFF !important;
@@ -28,16 +27,16 @@ st.markdown(
       border-radius: 4px !important;
       font-family: monospace !important;
     }
-
-    /* 5) Decode button: blue background, white text */
+    /* Decode button - clean reset so label appears */
     .stButton>button {
       background-color: #1E3A8A !important;
       color: #FFFFFF !important;
+      font-size: 1rem !important;
+      line-height: 1.5 !important;
+      padding: 0.6rem 1.2rem !important;
       border: none !important;
       border-radius: 4px !important;
-      font-weight: bold !important;
-      padding: 0.6rem 1.2rem !important;
-      min-width: 100px !important;
+      text-align: center !important;
     }
     </style>
     """,
