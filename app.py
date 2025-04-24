@@ -6,23 +6,19 @@ st.set_page_config(page_title="LEGv8 Reverse-Assembler", layout="centered")
 st.markdown(
     """
     <style>
-    /* 1) White page background */
     [data-testid="stAppViewContainer"] {
       background-color: #FFFFFF;
     }
 
-    /* 2) Center & style the title */
     h1 {
       text-align: center !important;
       color: #1E3A8A !important;
     }
 
-    /* 3) Royal-blue for all other text */
     h2, p, label, .stRadio label {
       color: #1E3A8A !important;
     }
 
-    /* 4) Dark textarea styling */
     .stTextArea>div>textarea {
       background-color: #222222 !important;
       color: #FFFFFF !important;
@@ -31,37 +27,36 @@ st.markdown(
       font-family: monospace !important;
     }
 
-    /* 5) Decode button styling */
-    .stButton button {
-      background-color: #1E3A8A !important;
-      color: #FFFFFF !important;
-      border: none !important;
-      border-radius: 6px !important;
-      padding: 0.6rem 1.5rem !important;
-      font-size: 16px !important;
-      font-weight: 600 !important;
-      min-width: 120px !important;
-      text-align: center !important;
-      display: inline-block !important;
-      white-space: nowrap !important;
-      transition: opacity 0.2s ease-in-out;
+    /* Decode button style */
+    .decode-btn {
+      background-color: #1E3A8A;
+      color: white;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      display: inline-block;
+      margin-top: 10px;
     }
-    .stButton button:hover {
-      opacity: 0.9 !important;
+
+    .decode-btn:hover {
+      opacity: 0.9;
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# ─── Header & instructions ────────────────────────────────────────────────────
+# ─── App Title ────────────────────────────────────────────────────────────────
 st.title("LEGv8 Reverse-Assembler")
 st.markdown("Choose input format, paste your code below, then click **Decode**.")
 
-# ─── Input format selector ────────────────────────────────────────────────────
+# ─── Input selection ──────────────────────────────────────────────────────────
 fmt = st.radio("Input format:", ("Hexadecimal", "Binary"), index=0, horizontal=True)
 
-# ─── Textarea prompt based on format ──────────────────────────────────────────
 paste_label = (
     "Paste one or more 8-digit HEX codes (e.g. D1002C27), separated by spaces or new lines:"
     if fmt == "Hexadecimal"
@@ -70,30 +65,34 @@ paste_label = (
 )
 codes_input = st.text_area(paste_label, height=180)
 
-# ─── Decode button & output ───────────────────────────────────────────────────
-if st.button("Decode"):
-    if not codes_input.strip():
-        st.warning("Please enter at least one machine code.")
-    else:
-        for token in codes_input.split():
-            tok = token.strip()
-            # Convert binary → hex if needed
-            if fmt == "Binary":
-                if not all(c in "01" for c in tok):
-                    st.error(f"Invalid binary: {tok}")
-                    continue
-                tok = format(int(tok, 2), "08X")
-            else:  # Hex mode
-                tok = tok.removeprefix("0x").upper().zfill(8)
-                try:
-                    int(tok, 16)
-                except ValueError:
-                    st.error(f"Invalid hex: {token}")
-                    continue
+# ─── Custom Button with form handling ─────────────────────────────────────────
+with st.form("decode_form"):
+    submitted = st.form_submit_button(label="Decode")
+    st.markdown('<button class="decode-btn" type="submit">Decode</button>', unsafe_allow_html=True)
 
-            # Decode and display
-            try:
-                asm = decode(tok)
-                st.write(f"**{tok}** → {asm}")
-            except Exception as e:
-                st.error(f"Error decoding {tok}: {e}")
+    if submitted:
+        if not codes_input.strip():
+            st.warning("Please enter at least one machine code.")
+        else:
+            for token in codes_input.split():
+                tok = token.strip()
+                # Convert binary → hex if needed
+                if fmt == "Binary":
+                    if not all(c in "01" for c in tok):
+                        st.error(f"Invalid binary: {tok}")
+                        continue
+                    tok = format(int(tok, 2), "08X")
+                else:  # Hex mode
+                    tok = tok.removeprefix("0x").upper().zfill(8)
+                    try:
+                        int(tok, 16)
+                    except ValueError:
+                        st.error(f"Invalid hex: {token}")
+                        continue
+
+                # Decode and display
+                try:
+                    asm = decode(tok)
+                    st.write(f"**{tok}** → {asm}")
+                except Exception as e:
+                    st.error(f"Error decoding {tok}: {e}")
