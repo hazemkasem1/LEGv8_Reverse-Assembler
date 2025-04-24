@@ -52,13 +52,13 @@ paste_label = (
 )
 codes_input = st.text_area(paste_label, height=180)
 
-# ─── Decode button & warnings restored ────────────────────────────────────────
+# ─── Decode button & output with extra warnings ───────────────────────────────
 if st.button("Decode"):
     # 1) Empty‐input warning
     if not codes_input.strip():
         st.warning("Please enter at least one machine code.")
     else:
-        # 2) Tokenize and decode each
+        # 2) Process each token
         for token in codes_input.split():
             tok = token.strip()
             # a) Binary → hex
@@ -76,9 +76,15 @@ if st.button("Decode"):
                     st.warning(f"Invalid hex code: {token}")
                     continue
 
-            # 3) Decode and catch errors
+            # 3) Decode
             try:
                 asm = decode_inst(tok)
-                st.success(f"**{tok}** → {asm}")
             except Exception as e:
                 st.error(f"Error decoding {tok}: {e}")
+                continue
+
+            # 4) Unknown‐instruction warning
+            if asm.startswith(".word"):
+                st.warning(f"**{tok}** → Unknown instruction")
+            else:
+                st.success(f"**{tok}** → {asm}")
