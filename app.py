@@ -1,36 +1,20 @@
 import streamlit as st
-from streamlit.components.v1 import html
 from legv8_disasm import decode
 
-# ─── Page config & CSS ────────────────────────────────────────────────────────
+# ─── Page config & minimal CSS ────────────────────────────────────────────────
 st.set_page_config(page_title="LEGv8 Reverse-Assembler", layout="centered")
 st.markdown(
     """
     <style>
     /* Background */
     [data-testid="stAppViewContainer"] { background-color: #E0F7FA; }
-    /* Global text */
-    h1, h2, h3, p, label, .stRadio label { color: #1E3A8A !important; }
-    /* OTP boxes */
-    .stTextInput>div>div>input {
-      background-color: #BBDEFB !important;
-      border: 2px solid #1E3A8A !important;
-      color: #1E3A8A !important;
-      font-weight: bold;
-      text-align: center;
-    }
-    /* Paste area */
-    .stTextArea>div>textarea {
-      background-color: #E3F2FD !important;
-      border: 2px solid #1E3A8A !important;
-      color: #1E3A8A !important;
-      font-family: monospace;
-    }
+    /* Headings & text */
+    h1, h2, p, label { color: #1E3A8A !important; }
     /* Decode button */
     .stButton>button {
       background-color: #1E3A8A !important;
       color: white !important;
-      border-radius: 8px;
+      border-radius: 4px;
       font-weight: bold;
     }
     </style>
@@ -38,90 +22,40 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ─── Session‐state defaults ───────────────────────────────────────────────────
-if 'fmt' not in st.session_state:
-    st.session_state['fmt'] = 'Hexadecimal'
-if 'paste' not in st.session_state:
-    st.session_state['paste'] = ''
-for i in range(8):
-    st.session_state.setdefault(f'hex_{i}', '')
-    st.session_state.setdefault(f'bin_{i}', '')
-
-# ─── Paste callback: auto‐fill the boxes ───────────────────────────────────────
-def paste_callback():
-    code = st.session_state['paste'].strip()
-    fmt = st.session_state['fmt']
-    if fmt == 'Hexadecimal':
-        c = code.upper()
-        for idx in range(8):
-            st.session_state[f'hex_{idx}'] = c[idx] if idx < len(c) else ''
-    else:
-        b = ''.join(ch for ch in code if ch in '01')
-        for idx in range(8):
-            start, end = 4 * idx, 4 * (idx + 1)
-            st.session_state[f'bin_{idx}'] = b[start:end]
-
-# ─── Header & format selector ─────────────────────────────────────────────────
+# ─── Header & instructions ────────────────────────────────────────────────────
 st.title("LEGv8 Reverse-Assembler")
-st.markdown("Choose input format, fill the boxes or paste your code, then click **Decode**.")
-fmt = st.radio("Input format:", ("Hexadecimal", "Binary"), key='fmt', horizontal=True)
-
-# ─── Paste area with on_change ────────────────────────────────────────────────
-paste_label = (
-    "...or paste full hex code here:" if fmt == 'Hexadecimal'
-    else "...or paste full binary code here:"
-)
-st.text_area(paste_label, key='paste', on_change=paste_callback, height=100)
-
-# ─── OTP‐style boxes (MS‐group leftmost) ───────────────────────────────────────
-st.markdown("#### Enter your code below")
-cols = st.columns(8)
-if fmt == 'Hexadecimal':
-    for idx, col in enumerate(cols):
-        col.text_input("", max_chars=1, key=f'hex_{idx}')
-else:
-    for idx, col in enumerate(cols):
-        col.text_input("", max_chars=4, key=f'bin_{idx}')
-
-# ─── Inject JS to auto‐advance focus ───────────────────────────────────────────
-html(
-    """
-    <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const inputs = Array.from(document.querySelectorAll('.stTextInput input'));
-      inputs.forEach((inp, idx) => {
-        inp.addEventListener('input', () => {
-          if (inp.value.length >= inp.maxLength) {
-            const nxt = inputs[idx+1];
-            if (nxt) nxt.focus();
-          }
-        });
-      });
-    });
-    </script>
-    """,
-    height=0,
+st.markdown(
+    "Insert one or more 32-bit machine codes below (hex or binary), separated by spaces or new lines, then click **Decode**."
 )
 
-# ─── Build code from boxes ────────────────────────────────────────────────────
-if fmt == 'Hexadecimal':
-    code = "".join(st.session_state[f'hex_{i}'] for i in range(8))
-else:
-    code = "".join(st.session_state[f'bin_{i}'] for i in range(8))
+# ─── Single textarea for all codes ────────────────────────────────────────────
+codes_input = st.text_area(
+    "Machine codes:",
+    placeholder="e.g. D1002C27 FE000000 … or 110100010000… etc",
+    height=150,
+)
 
-# ─── Decode button & display ─────────────────────────────────────────────────
+# ─── Decode button ────────────────────────────────────────────────────────────
 if st.button("Decode"):
-    if not code:
-        st.warning("Please enter or paste a code.")
+    if not codes_input.strip():
+        st.warning("Please enter at least one machine code.")
     else:
-        if fmt == 'Binary':
+        # Split on whitespace, handle each token
+        for token in codes_input.split():
+            tok = token.strip()
+            # Detect binary vs hex
+            if all(c in "01" for c in tok):
+                # pad to 32-bit if needed
+                try:
+                    tok = format(int(tok, 2), "08X")
+                except ValueError:
+                    st.error(f"Invalid binary string: {token}")
+                    continue
+            else:
+                tok = tok.removeprefix("0x").upper().zfill(8)
+            # Decode and display
             try:
-                code = format(int(code, 2), '08X')
-            except ValueError:
-                st.error("Invalid binary: must be up to 32 bits of 0s and 1s.")
-                st.stop()
-        try:
-            result = decode(code)
-            st.success(f"**{code}** → {result}")
-        except Exception as e:
-            st.error(f"Error decoding: {e}")
+                asm = decode(tok)
+                st.write(f"**{tok}** → {asm}")
+            except Exception as e:
+                st.error(f"Error decoding {tok}: {e}")
