@@ -1,59 +1,80 @@
 import streamlit as st
 from legv8_disasm import decode
 
-# ─── Page config & minimal CSS ────────────────────────────────────────────────
+# ─── Page config & CSS ────────────────────────────────────────────────────────
 st.set_page_config(page_title="LEGv8 Reverse-Assembler", layout="centered")
 st.markdown(
     """
     <style>
-    /* Background */
+    /* 1) Page background */
     [data-testid="stAppViewContainer"] { background-color: #E0F7FA; }
-    /* Headings & text */
-    h1, h2, p, label { color: #1E3A8A !important; }
-    /* Decode button */
+    /* 2) Headings & text in royal-blue */
+    h1, h2, p, label, .stRadio label { color: #1E3A8A !important; }
+    /* 3) Textarea styling */
+    .stTextArea>div>textarea {
+      background-color: #222222 !important;
+      color: #E0F7FA !important;
+      border: 2px solid #1E3A8A !important;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    /* 4) Decode button */
     .stButton>button {
       background-color: #1E3A8A !important;
       color: white !important;
       border-radius: 4px;
       font-weight: bold;
+      margin-top: 0.5em;
     }
     </style>
     """,
-    unsafe_allow_html=True,
+    unsafe_allow_html=True
 )
 
 # ─── Header & instructions ────────────────────────────────────────────────────
 st.title("LEGv8 Reverse-Assembler")
-st.markdown(
-    "Insert one or more 32-bit machine codes below (hex or binary), separated by spaces or new lines, then click **Decode**."
+st.markdown("Choose input format, paste your code below, then click **Decode**.")
+
+# ─── Input format radio ───────────────────────────────────────────────────────
+fmt = st.radio(
+    "Input format:",
+    ("Hexadecimal", "Binary"),
+    index=0,
+    horizontal=True
 )
 
-# ─── Single textarea for all codes ────────────────────────────────────────────
-codes_input = st.text_area(
-    "Machine codes:",
-    placeholder="e.g. D1002C27 FE000000 … or 110100010000… etc",
-    height=150,
+# ─── Single textarea for codes ────────────────────────────────────────────────
+label = (
+    "…or paste full hex code here (32-bit words, separated by spaces or new lines):"
+    if fmt == "Hexadecimal"
+    else
+    "…or paste full binary code here (32-bit words, separated by spaces or new lines):"
 )
+codes_input = st.text_area(label, height=180)
 
-# ─── Decode button ────────────────────────────────────────────────────────────
+# ─── Decode button & results ─────────────────────────────────────────────────
 if st.button("Decode"):
     if not codes_input.strip():
         st.warning("Please enter at least one machine code.")
     else:
-        # Split on whitespace, handle each token
         for token in codes_input.split():
             tok = token.strip()
-            # Detect binary vs hex
-            if all(c in "01" for c in tok):
-                # pad to 32-bit if needed
-                try:
-                    tok = format(int(tok, 2), "08X")
-                except ValueError:
-                    st.error(f"Invalid binary string: {token}")
+            # Auto-detect / convert
+            if fmt == "Binary":
+                if not all(c in "01" for c in tok):
+                    st.error(f"Invalid binary: {tok}")
                     continue
-            else:
+                tok = format(int(tok, 2), "08X")
+            else:  # Hex
                 tok = tok.removeprefix("0x").upper().zfill(8)
-            # Decode and display
+                # Validate
+                try:
+                    int(tok, 16)
+                except ValueError:
+                    st.error(f"Invalid hex: {token}")
+                    continue
+
+            # Decode & display
             try:
                 asm = decode(tok)
                 st.write(f"**{tok}** → {asm}")
