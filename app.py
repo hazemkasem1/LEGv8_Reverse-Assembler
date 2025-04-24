@@ -1,58 +1,26 @@
 import streamlit as st
 from legv8_disasm import decode
 
-# ─── Page config & CSS ────────────────────────────────────────────────────────
+# ─── Page setup & minimal CSS ────────────────────────────────────────────────
 st.set_page_config(page_title="LEGv8 Reverse-Assembler", layout="centered")
 st.markdown(
     """
     <style>
-    /* 1) White page background */
+    /* White background */
     [data-testid="stAppViewContainer"] {
       background-color: #FFFFFF;
     }
-
-    /* 2) Center & style the title */
-    h1 {
-      text-align: center !important;
+    /* Dark-blue title and labels */
+    h1, h2, p, label, .stRadio label {
       color: #1E3A8A !important;
     }
-
-    /* 3) Royal-blue for all other text */
-    h2, p, label, .stRadio label {
-      color: #1E3A8A !important;
-    }
-
-    /* 4) Dark textarea styling */
+    /* White textarea with dark-blue border */
     .stTextArea>div>textarea {
-      background-color: #222222 !important;
-      color: #FFFFFF !important;
+      background-color: #FFFFFF !important;
+      color: #000000 !important;
       border: 2px solid #1E3A8A !important;
       border-radius: 4px !important;
       font-family: monospace !important;
-    }
-
-    /* 5) Fancy Decode button with forced white label */
-    .stButton button {
-      background: linear-gradient(135deg, #1E3A8A 0%, #3F51B5 100%) !important;
-      color: #FFFFFF !important;              /* force white text */
-      border: none !important;
-      border-radius: 8px !important;
-      padding: 0.6rem 1.4rem !important;
-      font-size: 1.1rem !important;
-      font-weight: 600 !important;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
-      transition: all 0.2s ease-in-out !important;
-    }
-    .stButton button:disabled {
-      color: #FFFFFF !important;              /* keep white if disabled */
-    }
-    .stButton button:hover {
-      box-shadow: 0 6px 12px rgba(0,0,0,0.3) !important;
-      transform: translateY(-2px) !important;
-    }
-    .stButton button:active {
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
-      transform: translateY(0) !important;
     }
     </style>
     """,
@@ -67,13 +35,13 @@ st.markdown("Choose input format, paste your code below, then click **Decode**."
 fmt = st.radio("Input format:", ("Hexadecimal", "Binary"), index=0, horizontal=True)
 
 # ─── Textarea prompt based on format ──────────────────────────────────────────
-paste_label = (
+prompt = (
     "Paste one or more 8-digit HEX codes (e.g. D1002C27), separated by spaces or new lines:"
     if fmt == "Hexadecimal"
     else
     "Paste one or more 32-bit BINARY codes (e.g. 000100010000…), separated by spaces or new lines:"
 )
-codes_input = st.text_area(paste_label, height=180)
+codes_input = st.text_area(prompt, height=180)
 
 # ─── Decode button & output ───────────────────────────────────────────────────
 if st.button("Decode"):
@@ -82,13 +50,13 @@ if st.button("Decode"):
     else:
         for token in codes_input.split():
             tok = token.strip()
-            # Convert binary → hex if needed
+            # Binary → HEX if needed
             if fmt == "Binary":
                 if not all(c in "01" for c in tok):
                     st.error(f"Invalid binary: {tok}")
                     continue
                 tok = format(int(tok, 2), "08X")
-            else:  # Hex mode
+            else:
                 tok = tok.removeprefix("0x").upper().zfill(8)
                 try:
                     int(tok, 16)
@@ -96,7 +64,6 @@ if st.button("Decode"):
                     st.error(f"Invalid hex: {token}")
                     continue
 
-            # Decode and display
             try:
                 asm = decode(tok)
                 st.write(f"**{tok}** → {asm}")
