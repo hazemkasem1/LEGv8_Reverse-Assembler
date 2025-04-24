@@ -31,28 +31,16 @@ st.markdown(
       font-family: monospace !important;
     }
 
-    /* 5) Fancy Decode button with forced white label */
+    /* 5) Simple Decode button: dark-blue background, white text */
     .stButton button {
-      background: linear-gradient(135deg, #1E3A8A 0%, #3F51B5 100%) !important;
-      color: #FFFFFF !important;              /* force white text */
+      background-color: #1E3A8A !important;
+      color: #FFFFFF !important;
       border: none !important;
-      border-radius: 8px !important;
-      padding: 0.6rem 1.4rem !important;
-      font-size: 1.1rem !important;
-      font-weight: 600 !important;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
-      transition: all 0.2s ease-in-out !important;
-    }
-    .stButton button:disabled {
-      color: #FFFFFF !important;              /* keep white if disabled */
+      border-radius: 4px !important;
+      padding: 0.6rem 1.2rem !important;
     }
     .stButton button:hover {
-      box-shadow: 0 6px 12px rgba(0,0,0,0.3) !important;
-      transform: translateY(-2px) !important;
-    }
-    .stButton button:active {
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
-      transform: translateY(0) !important;
+      opacity: 0.9 !important;
     }
     </style>
     """,
