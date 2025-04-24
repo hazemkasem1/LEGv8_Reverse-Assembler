@@ -56,4 +56,72 @@ def paste_callback():
         for idx in range(8):
             st.session_state[f'hex_{idx}'] = c[idx] if idx < len(c) else ''
     else:
-        b = ''.
+        b = ''.join(ch for ch in code if ch in '01')
+        for idx in range(8):
+            start, end = 4 * idx, 4 * (idx + 1)
+            st.session_state[f'bin_{idx}'] = b[start:end]
+
+# ─── Header & format selector ─────────────────────────────────────────────────
+st.title("LEGv8 Reverse-Assembler")
+st.markdown("Choose input format, fill the boxes or paste your code, then click **Decode**.")
+fmt = st.radio("Input format:", ("Hexadecimal", "Binary"), key='fmt', horizontal=True)
+
+# ─── Paste area with on_change ────────────────────────────────────────────────
+paste_label = (
+    "...or paste full hex code here:" if fmt == 'Hexadecimal'
+    else "...or paste full binary code here:"
+)
+st.text_area(paste_label, key='paste', on_change=paste_callback, height=100)
+
+# ─── OTP‐style boxes (MS‐group leftmost) ───────────────────────────────────────
+st.markdown("#### Enter your code below")
+cols = st.columns(8)
+if fmt == 'Hexadecimal':
+    for idx, col in enumerate(cols):
+        col.text_input("", max_chars=1, key=f'hex_{idx}')
+else:
+    for idx, col in enumerate(cols):
+        col.text_input("", max_chars=4, key=f'bin_{idx}')
+
+# ─── Inject JS to auto‐advance focus ───────────────────────────────────────────
+html(
+    """
+    <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const inputs = Array.from(document.querySelectorAll('.stTextInput input'));
+      inputs.forEach((inp, idx) => {
+        inp.addEventListener('input', () => {
+          if (inp.value.length >= inp.maxLength) {
+            const nxt = inputs[idx+1];
+            if (nxt) nxt.focus();
+          }
+        });
+      });
+    });
+    </script>
+    """,
+    height=0,
+)
+
+# ─── Build code from boxes ────────────────────────────────────────────────────
+if fmt == 'Hexadecimal':
+    code = "".join(st.session_state[f'hex_{i}'] for i in range(8))
+else:
+    code = "".join(st.session_state[f'bin_{i}'] for i in range(8))
+
+# ─── Decode button & display ─────────────────────────────────────────────────
+if st.button("Decode"):
+    if not code:
+        st.warning("Please enter or paste a code.")
+    else:
+        if fmt == 'Binary':
+            try:
+                code = format(int(code, 2), '08X')
+            except ValueError:
+                st.error("Invalid binary: must be up to 32 bits of 0s and 1s.")
+                st.stop()
+        try:
+            result = decode(code)
+            st.success(f"**{code}** → {result}")
+        except Exception as e:
+            st.error(f"Error decoding: {e}")
