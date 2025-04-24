@@ -6,20 +6,23 @@ st.set_page_config(page_title="LEGv8 Reverse-Assembler", layout="centered")
 st.markdown(
     """
     <style>
-    /* White page background */
+    /* 1) White background */
     [data-testid="stAppViewContainer"] {
       background-color: #FFFFFF;
     }
-    /* Center & style the title */
+
+    /* 2) Center & color the title */
     h1 {
       text-align: center !important;
       color: #1E3A8A !important;
     }
-    /* Royal-blue for all other text */
+
+    /* 3) Royal-blue for other text */
     h2, p, label, .stRadio label {
       color: #1E3A8A !important;
     }
-    /* Dark textarea */
+
+    /* 4) Dark textarea styling */
     .stTextArea>div>textarea {
       background-color: #222222 !important;
       color: #FFFFFF !important;
@@ -27,15 +30,18 @@ st.markdown(
       border-radius: 4px !important;
       font-family: monospace !important;
     }
-    /* Decode button - clean reset so label appears */
-    .stButton>button {
+
+    /* 5) Decode button background + force white text */
+    .stButton button {
       background-color: #1E3A8A !important;
-      color: #FFFFFF !important;
-      font-size: 1rem !important;
-      line-height: 1.5 !important;
-      padding: 0.6rem 1.2rem !important;
       border: none !important;
       border-radius: 4px !important;
+      padding: 0.6rem 1.2rem !important;
+      font-weight: bold !important;
+      font-size: 1rem !important;
+      line-height: 1.5 !important;
+      color: #FFFFFF !important;         /* force white label */
+      opacity: 1 !important;             /* override any transparency */
       text-align: center !important;
     }
     </style>
@@ -52,7 +58,7 @@ fmt = st.radio("Input format:", ("Hexadecimal", "Binary"), index=0, horizontal=T
 
 # ─── Textarea label based on format ───────────────────────────────────────────
 paste_label = (
-    "Paste one or more 8-digit HEX machine codes (e.g. D1002C27), separated by spaces or new lines:"
+    "Paste one or more 8-digit HEX codes (e.g. D1002C27), separated by spaces or new lines:"
     if fmt == "Hexadecimal"
     else
     "Paste one or more 32-bit BINARY codes (e.g. 000100010000…), separated by spaces or new lines:"
