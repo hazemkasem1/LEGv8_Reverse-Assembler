@@ -27,18 +27,19 @@ st.markdown(
       font-family: monospace !important;
     }
 
-    /* Style the REAL submit button inside a form */
+    /* FINAL STYLED functional decode button */
     div.stButton > button:first-child {
       background-color: #1E3A8A !important;
-      color: white !important;
-      font-weight: bold !important;
+      color: #FFFFFF !important;
+      font-weight: 600 !important;
       font-size: 16px !important;
       border: none !important;
-      border-radius: 6px !important;
+      border-radius: 8px !important;
       padding: 10px 24px !important;
-      min-width: 120px;
+      min-width: 140px;
       margin-top: 10px;
     }
+
     div.stButton > button:first-child:hover {
       opacity: 0.9;
     }
@@ -63,7 +64,7 @@ paste_label = (
 )
 codes_input = st.text_area(paste_label, height=180)
 
-# ─── Properly styled and functional button using form ─────────────────────────
+# ─── Decode button & output (styled, functional) ──────────────────────────────
 with st.form("decode_form"):
     submit = st.form_submit_button("Decode")
 
