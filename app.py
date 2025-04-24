@@ -1,5 +1,5 @@
 import streamlit as st
-from legv8_disasm import decode
+from legv8_disasm import decode_inst  # <-- import the new decoder
 
 # ─── Page config & CSS ────────────────────────────────────────────────────────
 st.set_page_config(page_title="LEGv8 Reverse-Assembler", layout="centered")
@@ -9,16 +9,13 @@ st.markdown(
     [data-testid="stAppViewContainer"] {
       background-color: #FFFFFF;
     }
-
     h1 {
       text-align: center !important;
       color: #1E3A8A !important;
     }
-
     h2, p, label, .stRadio label {
       color: #1E3A8A !important;
     }
-
     .stTextArea>div>textarea {
       background-color: #222222 !important;
       color: #FFFFFF !important;
@@ -26,7 +23,6 @@ st.markdown(
       border-radius: 4px !important;
       font-family: monospace !important;
     }
-
     /* Decode button: white background with dark blue text */
     div.stButton > button:first-child {
       background-color: #FFFFFF !important;
@@ -39,7 +35,6 @@ st.markdown(
       min-width: 140px;
       margin-top: 10px;
     }
-
     div.stButton > button:first-child:hover {
       background-color: #F3F4F6 !important;
       opacity: 0.95;
@@ -65,7 +60,7 @@ paste_label = (
 )
 codes_input = st.text_area(paste_label, height=180)
 
-# ─── Decode button & output ───────────────────────────────────────────────────
+# ─── Decode form ───────────────────────────────────────────────────────────────
 with st.form("decode_form"):
     submit = st.form_submit_button("Decode")
 
@@ -89,9 +84,9 @@ with st.form("decode_form"):
                         st.error(f"Invalid hex: {token}")
                         continue
 
-                # Decode and display
+                # Decode via the new function
                 try:
-                    asm = decode(tok)
+                    asm = decode_inst(tok)
                     st.write(f"**{tok}** → {asm}")
                 except Exception as e:
                     st.error(f"Error decoding {tok}: {e}")
