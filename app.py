@@ -27,22 +27,19 @@ st.markdown(
       font-family: monospace !important;
     }
 
-    /* Decode button style */
-    .decode-btn {
-      background-color: #1E3A8A;
-      color: white;
-      padding: 10px 24px;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: center;
-      display: inline-block;
+    /* Style the REAL submit button inside a form */
+    div.stButton > button:first-child {
+      background-color: #1E3A8A !important;
+      color: white !important;
+      font-weight: bold !important;
+      font-size: 16px !important;
+      border: none !important;
+      border-radius: 6px !important;
+      padding: 10px 24px !important;
+      min-width: 120px;
       margin-top: 10px;
     }
-
-    .decode-btn:hover {
+    div.stButton > button:first-child:hover {
       opacity: 0.9;
     }
     </style>
@@ -50,13 +47,14 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ─── App Title ────────────────────────────────────────────────────────────────
+# ─── Header & instructions ────────────────────────────────────────────────────
 st.title("LEGv8 Reverse-Assembler")
 st.markdown("Choose input format, paste your code below, then click **Decode**.")
 
-# ─── Input selection ──────────────────────────────────────────────────────────
+# ─── Input format selector ────────────────────────────────────────────────────
 fmt = st.radio("Input format:", ("Hexadecimal", "Binary"), index=0, horizontal=True)
 
+# ─── Textarea prompt based on format ──────────────────────────────────────────
 paste_label = (
     "Paste one or more 8-digit HEX codes (e.g. D1002C27), separated by spaces or new lines:"
     if fmt == "Hexadecimal"
@@ -65,12 +63,11 @@ paste_label = (
 )
 codes_input = st.text_area(paste_label, height=180)
 
-# ─── Custom Button with form handling ─────────────────────────────────────────
+# ─── Properly styled and functional button using form ─────────────────────────
 with st.form("decode_form"):
-    submitted = st.form_submit_button(label="Decode")
-    st.markdown('<button class="decode-btn" type="submit">Decode</button>', unsafe_allow_html=True)
+    submit = st.form_submit_button("Decode")
 
-    if submitted:
+    if submit:
         if not codes_input.strip():
             st.warning("Please enter at least one machine code.")
         else:
