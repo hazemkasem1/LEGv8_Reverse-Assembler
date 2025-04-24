@@ -1,5 +1,5 @@
 import streamlit as st
-from legv8_disasm import decode_inst  # or `decode` if you aliased it
+from legv8_disasm import decode_inst
 
 # ─── Page config & CSS ────────────────────────────────────────────────────────
 st.set_page_config(page_title="LEGv8 Reverse-Assembler", layout="centered")
@@ -16,7 +16,6 @@ st.markdown(
       border-radius: 4px !important;
       font-family: monospace !important;
     }
-    /* Decode button: white background with dark blue text */
     div.stButton > button {
       background-color: #FFFFFF !important;
       color: #1E3A8A !important;
