@@ -1,48 +1,31 @@
 import streamlit as st
 from legv8_disasm import decode
 
-# ─── Page config & CSS ────────────────────────────────────────────────────────
+# ─── Page config & minimal CSS ────────────────────────────────────────────────
 st.set_page_config(page_title="LEGv8 Reverse-Assembler", layout="centered")
 st.markdown(
     """
     <style>
-    /* 1) White background */
+    /* White background */
     [data-testid="stAppViewContainer"] {
       background-color: #FFFFFF;
     }
-
-    /* 2) Center & color the title */
+    /* Center & style the title */
     h1 {
       text-align: center !important;
       color: #1E3A8A !important;
     }
-
-    /* 3) Royal-blue for other text */
+    /* Royal-blue for all other text */
     h2, p, label, .stRadio label {
       color: #1E3A8A !important;
     }
-
-    /* 4) Dark textarea styling */
+    /* Dark textarea */
     .stTextArea>div>textarea {
       background-color: #222222 !important;
       color: #FFFFFF !important;
       border: 2px solid #1E3A8A !important;
       border-radius: 4px !important;
       font-family: monospace !important;
-    }
-
-    /* 5) Decode button background + force white text */
-    .stButton button {
-      background-color: #1E3A8A !important;
-      border: none !important;
-      border-radius: 4px !important;
-      padding: 0.6rem 1.2rem !important;
-      font-weight: bold !important;
-      font-size: 1rem !important;
-      line-height: 1.5 !important;
-      color: #FFFFFF !important;         /* force white label */
-      opacity: 1 !important;             /* override any transparency */
-      text-align: center !important;
     }
     </style>
     """,
@@ -53,34 +36,31 @@ st.markdown(
 st.title("LEGv8 Reverse-Assembler")
 st.markdown("Choose input format, paste your code below, then click **Decode**.")
 
-# ─── Input format selector ────────────────────────────────────────────────────
+# ─── Format selector ─────────────────────────────────────────────────────────
 fmt = st.radio("Input format:", ("Hexadecimal", "Binary"), index=0, horizontal=True)
 
-# ─── Textarea label based on format ───────────────────────────────────────────
-paste_label = (
+# ─── Textarea prompt ─────────────────────────────────────────────────────────
+prompt = (
     "Paste one or more 8-digit HEX codes (e.g. D1002C27), separated by spaces or new lines:"
     if fmt == "Hexadecimal"
     else
     "Paste one or more 32-bit BINARY codes (e.g. 000100010000…), separated by spaces or new lines:"
 )
+codes_input = st.text_area(prompt, height=180)
 
-# ─── Single textarea for codes ────────────────────────────────────────────────
-codes_input = st.text_area(paste_label, height=180)
-
-# ─── Decode button & output ───────────────────────────────────────────────────
+# ─── Decode button & result ─────────────────────────────────────────────────
 if st.button("Decode"):
     if not codes_input.strip():
         st.warning("Please enter at least one machine code.")
     else:
         for token in codes_input.split():
             tok = token.strip()
-            # Convert binary → hex if needed
             if fmt == "Binary":
                 if not all(c in "01" for c in tok):
                     st.error(f"Invalid binary: {tok}")
                     continue
                 tok = format(int(tok, 2), "08X")
-            else:  # Hex mode
+            else:  # Hex
                 tok = tok.removeprefix("0x").upper().zfill(8)
                 try:
                     int(tok, 16)
@@ -88,7 +68,6 @@ if st.button("Decode"):
                     st.error(f"Invalid hex: {token}")
                     continue
 
-            # Decode and display
             try:
                 asm = decode(tok)
                 st.write(f"**{tok}** → {asm}")
