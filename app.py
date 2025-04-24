@@ -1,7 +1,7 @@
 import streamlit as st
 from legv8_disasm import decode
 
-# ─── Page config & fancy CSS ──────────────────────────────────────────────────
+# ─── Page config & CSS ────────────────────────────────────────────────────────
 st.set_page_config(page_title="LEGv8 Reverse-Assembler", layout="centered")
 st.markdown(
     """
@@ -10,15 +10,18 @@ st.markdown(
     [data-testid="stAppViewContainer"] {
       background-color: #FFFFFF;
     }
+
     /* 2) Center & style the title */
     h1 {
       text-align: center !important;
       color: #1E3A8A !important;
     }
+
     /* 3) Royal-blue for all other text */
     h2, p, label, .stRadio label {
       color: #1E3A8A !important;
     }
+
     /* 4) Dark textarea styling */
     .stTextArea>div>textarea {
       background-color: #222222 !important;
@@ -27,10 +30,11 @@ st.markdown(
       border-radius: 4px !important;
       font-family: monospace !important;
     }
-    /* 5) Fancy Decode button */
+
+    /* 5) Fancy Decode button with forced white label */
     .stButton button {
       background: linear-gradient(135deg, #1E3A8A 0%, #3F51B5 100%) !important;
-      color: #FFFFFF !important;
+      color: #FFFFFF !important;              /* force white text */
       border: none !important;
       border-radius: 8px !important;
       padding: 0.6rem 1.4rem !important;
@@ -38,6 +42,9 @@ st.markdown(
       font-weight: 600 !important;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
       transition: all 0.2s ease-in-out !important;
+    }
+    .stButton button:disabled {
+      color: #FFFFFF !important;              /* keep white if disabled */
     }
     .stButton button:hover {
       box-shadow: 0 6px 12px rgba(0,0,0,0.3) !important;
