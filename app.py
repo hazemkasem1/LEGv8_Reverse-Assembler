@@ -31,15 +31,20 @@ st.markdown(
       font-family: monospace !important;
     }
 
-    /* 5) Decode button styling: visible text */
+    /* 5) Decode button styling */
     .stButton button {
       background-color: #1E3A8A !important;
       color: #FFFFFF !important;
       border: none !important;
-      border-radius: 4px !important;
+      border-radius: 6px !important;
       padding: 0.6rem 1.5rem !important;
       font-size: 16px !important;
-      font-weight: bold !important;
+      font-weight: 600 !important;
+      min-width: 120px !important;
+      text-align: center !important;
+      display: inline-block !important;
+      white-space: nowrap !important;
+      transition: opacity 0.2s ease-in-out;
     }
     .stButton button:hover {
       opacity: 0.9 !important;
