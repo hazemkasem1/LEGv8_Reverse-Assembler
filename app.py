@@ -1,7 +1,7 @@
 import streamlit as st
 from legv8_disasm import decode_inst
 
-# ─── Page config & CSS ────────────────────────────────────────────────────────
+# ─── Page config & CSS ───────────────────────────────────────────────────────
 st.set_page_config(page_title="LEGv8 Reverse-Assembler", layout="centered")
 st.markdown(
     """
