@@ -48,26 +48,22 @@ paste_label = (
     "Paste one or more 8-digit HEX codes (e.g. D1002C27), separated by spaces or new lines:"
     if fmt == "Hexadecimal"
     else
-    "Paste one or more 32-bit BINARY codes (e.g. 000100010000…), separated by spaces or new lines:"
+    "Paste one or more 32-bit BINARY codes (e.g. 11010001000000000010110000100111), separated by spaces or new lines:"
 )
 codes_input = st.text_area(paste_label, height=180)
 
 # ─── Decode button & output with extra warnings ───────────────────────────────
 if st.button("Decode"):
-    # 1) Empty‐input warning
     if not codes_input.strip():
         st.warning("Please enter at least one machine code.")
     else:
-        # 2) Process each token
         for token in codes_input.split():
             tok = token.strip()
-            # a) Binary → hex
             if fmt == "Binary":
                 if not all(c in "01" for c in tok):
                     st.warning(f"Invalid binary string: {tok}")
                     continue
                 tok = format(int(tok, 2), "08X")
-            # b) Normalize hex
             else:
                 tok = tok.removeprefix("0x").upper().zfill(8)
                 try:
@@ -76,14 +72,12 @@ if st.button("Decode"):
                     st.warning(f"Invalid hex code: {token}")
                     continue
 
-            # 3) Decode
             try:
                 asm = decode_inst(tok)
             except Exception as e:
                 st.error(f"Error decoding {tok}: {e}")
                 continue
 
-            # 4) Unknown‐instruction warning
             if asm.startswith(".word"):
                 st.warning(f"**{tok}** → Unknown instruction")
             else:
